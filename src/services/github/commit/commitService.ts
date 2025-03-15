@@ -6,15 +6,15 @@
  */
 
 import {
+  COMMIT_WITH_FILES_QUERY,
+  executeGitHubGraphQL,
+  REPOSITORY_COMMITS_QUERY,
+} from "@/services/github/api/graphqlService";
+import {
   CommitQueryResponse,
   GitHubCommit,
   RepositoryCommitsResponse,
 } from "@/types/github";
-import {
-  COMMIT_WITH_FILES_QUERY,
-  executeGitHubGraphQL,
-  REPOSITORY_COMMITS_QUERY,
-} from "../api/graphqlService";
 
 /**
  * Fetches a specific commit with its file changes
