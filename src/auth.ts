@@ -25,6 +25,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     GithubProvider({
       clientId: process.env.GITHUB_ID || "",
       clientSecret: process.env.GITHUB_SECRET || "",
+      authorization: {
+        params: {
+          // Request the following OAuth scopes during sign-in
+          scope: "read:user user:email repo",
+        },
+      },
     }),
   ],
   callbacks: {
@@ -41,4 +47,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
+  debug: false,
 });

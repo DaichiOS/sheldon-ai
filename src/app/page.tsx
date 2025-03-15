@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import SignInButton from "@/components/auth/SignInButton";
-
+import Profile from "@/components/ui/profile/Profile";
 export default async function Home() {
   const session = await auth();
   
@@ -10,6 +10,7 @@ export default async function Home() {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-2">Welcome, {session.user?.name}</h1>
           <p>You are signed in with GitHub</p>
+          <Profile />
         </div>
       ) : (
         <div className="text-center">
