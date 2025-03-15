@@ -1,6 +1,8 @@
 import { auth } from "@/auth";
 import SignInButton from "@/components/auth/SignInButton";
 import Profile from "@/components/ui/profile/Profile";
+import Link from "next/link";
+
 export default async function Home() {
   const session = await auth();
   
@@ -11,6 +13,15 @@ export default async function Home() {
           <h1 className="text-2xl font-bold mb-2">Welcome, {session.user?.name}</h1>
           <p>You are signed in with GitHub</p>
           <Profile />
+          
+          <div className="mt-6">
+            <Link 
+              href="/test/commits" 
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Test GitHub Commits API
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="text-center">

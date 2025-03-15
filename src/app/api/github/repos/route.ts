@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { getUserRepositories } from "@/services/github/githubService";
+import { getUserRepositories } from "@/services/github/repository/repositoryService";
 import { NextResponse } from "next/server";
 
 /**

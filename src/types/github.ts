@@ -55,3 +55,59 @@ export interface GitHubEvent {
   created_at: string;
   payload: any;
 }
+
+// GraphQL API Types
+
+/**
+ * Represents a file changed in a commit
+ */
+export interface GitHubCommitFile {
+  path: string;
+  additions: number;
+  deletions: number;
+  patch?: string; // The actual code changes
+}
+
+/**
+ * Represents a commit from the GraphQL API
+ */
+export interface GitHubCommit {
+  oid: string; // Commit hash
+  message: string;
+  committedDate: string;
+  author: {
+    name: string;
+    email: string;
+  };
+  additions: number;
+  deletions: number;
+  changedFiles: number;
+}
+
+/**
+ * Response structure for a commit query
+ */
+export interface CommitQueryResponse {
+  repository: {
+    object: GitHubCommit;
+  };
+}
+
+/**
+ * Response structure for a repository commits query
+ */
+export interface RepositoryCommitsResponse {
+  repository: {
+    defaultBranchRef: {
+      target: {
+        history: {
+          nodes: GitHubCommit[];
+          pageInfo: {
+            hasNextPage: boolean;
+            endCursor: string;
+          };
+        };
+      };
+    };
+  };
+}
