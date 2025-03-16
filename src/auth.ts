@@ -3,7 +3,7 @@
  * This file sets up GitHub OAuth and exports authentication utilities.
  */
 
-import NextAuth from "next-auth";
+import NextAuth, { Account, Session, User } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import GithubProvider from "next-auth/providers/github";
 
@@ -35,61 +35,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    /**
-     * JWT Callback - Called whenever a JWT is created or updated
-     *
-     * This callback is invoked in the following scenarios:
-     * 1. When a user signs in (account and user are available)
-     * 2. When a session is accessed and the JWT needs verification
-     * 3. When a token is refreshed
-     *
-     * @param {Object} params - The callback parameters
-     * @param {JWT} params.token - The current JWT token
-     * @param {Object|null} params.account - OAuth account data (only available during sign-in)
-     * @param {Object|null} params.user - User profile data (only available during sign-in)
-     * @returns {Promise<JWT>} The updated JWT token
-     */
-    async jwt({ token, account, user }) {
-      // Only executes on the initial sign-in to populate the jwt token object for future requests
-      if (account && user) {
-        return {
-          accessToken: account.access_token,
-          refreshToken: account.refresh_token,
-          accessTokenExpires: account.expires_at
-            ? account.expires_at * 1000
-            : Date.now() + 8 * 60 * 60 * 1000, // Default to 8 hours (GitHub's default expiration),
-          user,
-        };
-      }
-
-      // Return previous token if the access token has not expired yet
-      if (token.accessTokenExpires && Date.now() < token.accessTokenExpires) {
-        return token;
-      }
-
-      // Access token has expired, try to refresh it
-      return refreshAccessToken(token);
-    },
-
-    /**
-     * Session Callback - Called whenever a session is checked
-     *
-     * This callback is used to customize the session object that is
-     * made available to the client. It runs whenever a session is accessed.
-     *
-     * @param {Object} params - The callback parameters
-     * @param {Object} params.session - The default session object
-     * @param {JWT} params.token - The JWT token
-     * @returns {Promise<Object>} The customized session object
-     */
-    async session({ session, token }) {
-      // Make the token available in the session
-      session.accessToken = token.accessToken;
-      return session;
-    },
+    jwt: jwtCallback,
+    session: sessionCallback,
   },
   debug: false,
 });
+
+/**
+ * Session Callback - Called whenever a session is checked
+ *
+ * This callback is used to customize the session object that is
+ * made available to the client. It runs whenever a session is accessed.
+ */
+export async function sessionCallback({
+  session,
+  token,
+}: {
+  session: Session;
+  token: JWT;
+}): Promise<Session> {
+  // Make the token available in the session
+  session.accessToken = token.accessToken;
+  return session;
+}
 
 /**
  * Refreshes an access token using the refresh token
@@ -98,9 +66,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
  * If successful, it returns an updated token object with the new access token and expiration.
  * If unsuccessful, it returns the original token with an error flag.
  *
- * @param {JWT} token - The current JWT token containing the refresh token
- * @returns {Promise<JWT>} A Promise that resolves to the updated JWT token
- *
  * @example
  * // Inside the jwt callback
  * if (token.accessTokenExpires && Date.now() < token.accessTokenExpires) {
@@ -108,7 +73,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
  * }
  * return refreshAccessToken(token); // Token expired, refresh it
  */
-async function refreshAccessToken(token: JWT) {
+export async function refreshAccessToken(token: JWT): Promise<JWT> {
   if (!token.refreshToken) {
     return {
       ...token,
@@ -164,4 +129,47 @@ async function refreshAccessToken(token: JWT) {
       error: "RefreshAccessTokenError",
     };
   }
+}
+
+export async function jwtCallback({
+  token,
+  account,
+  user,
+}: {
+  token: JWT;
+  account?: Account | null;
+  user?: User | null;
+}): Promise<JWT> {
+  /**
+   * JWT Callback - Called whenever a JWT is created or updated
+   *
+   * This callback is invoked in the following scenarios:
+   * 1. When a user signs in (account and user are available)
+   * 2. When a session is accessed and the JWT needs verification
+   * 3. When a token is refreshed
+   *
+   * @param {Object} params - The callback parameters
+   * @param {JWT} params.token - The current JWT token
+   * @param {Object|null} params.account - OAuth account data (only available during sign-in)
+   * @param {Object|null} params.user - User profile data (only available during sign-in)
+   * @returns {Promise<JWT>} The updated JWT token
+   */
+  // Only executes on the initial sign-in to populate the jwt token object for future requests
+  if (account && user) {
+    return {
+      accessToken: account.access_token,
+      refreshToken: account.refresh_token,
+      accessTokenExpires: account.expires_at
+        ? account.expires_at * 1000
+        : Date.now() + 8 * 60 * 60 * 1000, // Default to 8 hours (GitHub's default expiration),
+      user,
+    };
+  }
+
+  // Return previous token if the access token has not expired yet
+  if (token.accessTokenExpires && Date.now() < token.accessTokenExpires) {
+    return token;
+  }
+  // Access token has expired, try to refresh it
+  return refreshAccessToken(token);
 }
