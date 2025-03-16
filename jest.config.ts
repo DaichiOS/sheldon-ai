@@ -40,7 +40,10 @@ const customJestConfig = {
 
   // Use babel-jest for all files
   transform: {
-    "^.+\\.(js|jsx|ts|tsx)$": "babel-jest",
+    "^.+\\.(js|jsx|ts|tsx)$": [
+      "babel-jest",
+      { configFile: "./babel.config.jest.js" },
+    ],
   },
 
   // Coverage reporting
