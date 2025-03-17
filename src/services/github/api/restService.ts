@@ -1,4 +1,4 @@
-import { GitHubRepo } from "@/types/github";
+import { GitHubCommitDetail, GitHubRepo } from "@/types/github";
 
 /**
  * Makes an authenticated request to the GitHub API
@@ -131,4 +131,42 @@ export async function getUserRepositories(
   }).toString();
 
   return fetchFromGitHub<GitHubRepo[]>(`/user/repos?${query}`, accessToken);
+}
+
+/**
+ * Fetches detailed information about a specific commit, including file changes and diffs
+ *
+ * @param {string} owner - Repository owner (username or organization)
+ * @param {string} repo - Repository name
+ * @param {string} commitSha - The commit SHA to fetch details for
+ * @param {string} accessToken - GitHub OAuth access token
+ * @returns {Promise<GitHubCommitDetail>} Detailed commit information including file changes
+ * @throws {Error} If the commit cannot be found or the request fails
+ *
+ * @example
+ * // Get detailed information about a specific commit
+ * const commitDetail = await getCommitDetail('octocat', 'hello-world', 'abc123def456', accessToken);
+ * console.log(`Files changed: ${commitDetail.files.length}`);
+ * console.log(`Total changes: ${commitDetail.stats.total}`);
+ */
+export async function getCommitDetail(
+  owner: string,
+  repo: string,
+  commitSha: string,
+  accessToken: string
+): Promise<GitHubCommitDetail> {
+  // GitHub REST API endpoint for commit details
+  const endpoint = `/repos/${owner}/${repo}/commits/${commitSha}`;
+
+  try {
+    // Make the API request with the 'application/vnd.github.v3.diff' media type to get diffs
+    return await fetchFromGitHub<GitHubCommitDetail>(endpoint, accessToken, {
+      headers: {
+        Accept: "application/vnd.github.v3+json",
+      },
+    });
+  } catch (error) {
+    console.error(`Error fetching commit detail for ${commitSha}:`, error);
+    throw error;
+  }
 }

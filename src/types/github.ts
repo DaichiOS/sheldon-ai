@@ -65,7 +65,75 @@ export interface GitHubCommitFile {
   path: string;
   additions: number;
   deletions: number;
-  patch?: string; // The actual code changes
+  changes: number;
+  status: string; // 'added', 'modified', 'removed', etc.
+  patch?: string; // The actual code changes (diff)
+  filename: string;
+  previous_filename?: string; // For renamed files
+  raw_url: string; // URL to view the raw file
+  contents_url: string; // URL to get the file contents
+  sha: string; // Blob SHA
+}
+
+/**
+ * Represents detailed commit information from the REST API
+ */
+export interface GitHubCommitDetail {
+  sha: string;
+  node_id: string;
+  commit: {
+    author: {
+      name: string;
+      email: string;
+      date: string;
+    };
+    committer: {
+      name: string;
+      email: string;
+      date: string;
+    };
+    message: string;
+    tree: {
+      sha: string;
+      url: string;
+    };
+    url: string;
+    comment_count: number;
+    verification: {
+      verified: boolean;
+      reason: string;
+      signature: string | null;
+      payload: string | null;
+    };
+  };
+  url: string;
+  html_url: string;
+  comments_url: string;
+  author: {
+    login: string;
+    id: number;
+    avatar_url: string;
+    url: string;
+    html_url: string;
+  } | null;
+  committer: {
+    login: string;
+    id: number;
+    avatar_url: string;
+    url: string;
+    html_url: string;
+  } | null;
+  parents: Array<{
+    sha: string;
+    url: string;
+    html_url: string;
+  }>;
+  stats: {
+    total: number;
+    additions: number;
+    deletions: number;
+  };
+  files: GitHubCommitFile[];
 }
 
 /**

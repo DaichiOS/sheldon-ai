@@ -10,9 +10,11 @@ import {
   executeGitHubGraphQL,
   REPOSITORY_COMMITS_QUERY,
 } from "@/services/github/api/graphqlService";
+import { getCommitDetail } from "@/services/github/api/restService";
 import {
   CommitQueryResponse,
   GitHubCommit,
+  GitHubCommitDetail,
   RepositoryCommitsResponse,
 } from "@/types/github";
 
@@ -120,6 +122,35 @@ export async function getRepositoryCommits(
 }
 
 /**
+ * Fetches detailed commit information including file changes and diffs using the REST API
+ *
+ * @param {string} owner - Repository owner (username or organization)
+ * @param {string} repo - Repository name
+ * @param {string} commitSha - The commit SHA to fetch details for
+ * @param {string} accessToken - GitHub OAuth access token
+ * @returns {Promise<GitHubCommitDetail>} Detailed commit information including file changes
+ *
+ * @throws {Error} If the commit cannot be found or the request fails
+ *
+ * @example
+ * // Get detailed information about a specific commit
+ * const commitDetail = await getCommitDetailWithDiffs(
+ *   'octocat',
+ *   'hello-world',
+ *   'abc123def456',
+ *   accessToken
+ * );
+ */
+export async function getCommitDetailWithDiffs(
+  owner: string,
+  repo: string,
+  commitSha: string,
+  accessToken: string
+): Promise<GitHubCommitDetail> {
+  return getCommitDetail(owner, repo, commitSha, accessToken);
+}
+
+/**
  * Formats commit data for AI processing
  *
  * @param {GitHubCommit} commit - The commit data with file changes
@@ -140,6 +171,48 @@ export function formatCommitForAI(commit: GitHubCommit): string {
   formatted += `- ${commit.changedFiles} files changed\n`;
   formatted += `- ${commit.additions} additions\n`;
   formatted += `- ${commit.deletions} deletions\n`;
+
+  return formatted;
+}
+
+/**
+ * Formats detailed commit data for AI processing
+ *
+ * @param {GitHubCommitDetail} commitDetail - The detailed commit data with file changes and diffs
+ * @returns {string} A formatted string representation of the commit for AI analysis
+ *
+ * @example
+ * const commitDetail = await getCommitDetailWithDiffs('octocat', 'hello-world', 'abc123', accessToken);
+ * const formattedData = formatDetailedCommitForAI(commitDetail);
+ * // Use formattedData with an AI service
+ */
+export function formatDetailedCommitForAI(
+  commitDetail: GitHubCommitDetail
+): string {
+  // Create a formatted string with commit details and file changes
+  let formatted = `Commit: ${commitDetail.sha}\n`;
+  formatted += `Author: ${commitDetail.commit.author.name} <${commitDetail.commit.author.email}>\n`;
+  formatted += `Date: ${commitDetail.commit.author.date}\n`;
+  formatted += `Message: ${commitDetail.commit.message}\n\n`;
+
+  formatted += `Changes Summary:\n`;
+  formatted += `- ${commitDetail.files.length} files changed\n`;
+  formatted += `- ${commitDetail.stats.additions} additions\n`;
+  formatted += `- ${commitDetail.stats.deletions} deletions\n\n`;
+
+  formatted += `File Changes:\n`;
+
+  // Add details for each changed file
+  for (const file of commitDetail.files) {
+    formatted += `\nFile: ${file.filename}\n`;
+    formatted += `Status: ${file.status}\n`;
+    formatted += `Changes: +${file.additions} -${file.deletions}\n`;
+
+    // Include the actual code diff if available
+    if (file.patch) {
+      formatted += `Diff:\n${file.patch}\n`;
+    }
+  }
 
   return formatted;
 }

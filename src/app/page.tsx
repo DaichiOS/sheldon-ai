@@ -14,12 +14,19 @@ export default async function Home() {
           <p>You are signed in with GitHub</p>
           <Profile />
           
-          <div className="mt-6">
+          <div className="mt-6 flex flex-col gap-3">
             <Link 
               href="/test/commits" 
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
               Test GitHub Commits API
+            </Link>
+            
+            <Link 
+              href="/test/commit-details" 
+              className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+            >
+              Test Detailed Commit API
             </Link>
           </div>
         </div>
