@@ -14,7 +14,7 @@
  *
  * @template T - The expected return type of the query
  * @param {string} query - The GraphQL query string
- * @param {Record<string, any>} variables - Variables to use in the query
+ * @param {Record<string, unknown>} variables - Variables to use in the query
  * @param {string} accessToken - GitHub OAuth access token
  * @returns {Promise<T>} - The query result data
  *
@@ -32,7 +32,7 @@ export async function executeGitHubGraphQL<T>(
   query: string,
   // Record is a TypeScript type that represents an object where the keys are strings and the values can be of any type
   // It's used for the variables parameter because GraphQL queries can have various variables with different
-  variables: Record<string, any>,
+  variables: Record<string, unknown>,
   accessToken: string
 ): Promise<T> {
   const url = "https://api.github.com/graphql";
@@ -60,7 +60,7 @@ export async function executeGitHubGraphQL<T>(
             errorData
           )}`
         );
-      } catch (parseError) {
+      } catch {
         throw new Error(
           `GitHub GraphQL error: ${response.statusText} (${response.status})`
         );

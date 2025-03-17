@@ -1,5 +1,6 @@
 "use client";
 
+import { GitHubCommit, GitHubCommitDetail } from "@/types/github";
 import { useState } from "react";
 
 export default function CommitTester() {
@@ -9,9 +10,9 @@ export default function CommitTester() {
   const [commitSha, setCommitSha] = useState("");
   
   // State for API responses
-  const [commits, setCommits] = useState<any[]>([]);
-  const [selectedCommit, setSelectedCommit] = useState<any>(null);
-  const [detailedCommit, setDetailedCommit] = useState<any>(null);
+  const [commits, setCommits] = useState<GitHubCommit[]>([]);
+  const [selectedCommit, setSelectedCommit] = useState<GitHubCommit | null>(null);
+  const [detailedCommit, setDetailedCommit] = useState<GitHubCommitDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'basic' | 'detailed'>('basic');
@@ -269,7 +270,7 @@ export default function CommitTester() {
                 
                 <div className="text-sm text-gray-600 italic">
                   Note: Detailed file changes are not available through the GraphQL API in this implementation.
-                  Click the "Detailed Info" tab to view specific file changes.
+                  Click the &quot;Detailed Info&quot; tab to view specific file changes.
                 </div>
               </div>
             )
@@ -308,7 +309,7 @@ export default function CommitTester() {
                 
                 <h3 className="font-medium mt-4 mb-2">Files Changed</h3>
                 <div className="space-y-4 max-h-[600px] overflow-y-auto">
-                  {detailedCommit.files.map((file: any, index: number) => (
+                  {detailedCommit.files.map((file, index: number) => (
                     <div key={index} className="border rounded p-3">
                       <div className="flex items-center gap-2 mb-2">
                         <span className={`px-2 py-0.5 text-xs rounded-full ${getStatusColor(file.status)}`}>

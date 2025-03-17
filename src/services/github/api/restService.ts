@@ -69,12 +69,14 @@ export async function fetchFromGitHub<T>(
       try {
         const errorData = await response.json();
         throw new Error(
-          `GitHub API error: ${response.statusText} - ${JSON.stringify(
+          `GitHub REST API error (${response.status}): ${JSON.stringify(
             errorData
           )}`
         );
-      } catch (parseError) {
-        throw new Error(`GitHub API error: ${response.statusText}`);
+      } catch {
+        throw new Error(
+          `GitHub REST API error: ${response.statusText} (${response.status})`
+        );
       }
     }
 

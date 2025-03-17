@@ -53,7 +53,7 @@ export interface GitHubEvent {
     url: string;
   };
   created_at: string;
-  payload: any;
+  payload: Record<string, unknown>;
 }
 
 // GraphQL API Types

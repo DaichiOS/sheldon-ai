@@ -5,6 +5,13 @@ import {
 } from "@/services/github/commit/commitService";
 import { NextRequest, NextResponse } from "next/server";
 
+// Define a proper type for the context parameter
+type RouteParams = {
+  params: {
+    sha: string;
+  };
+};
+
 /**
  * GET /api/github/commits/[sha]/analyze
  *
@@ -18,10 +25,7 @@ import { NextRequest, NextResponse } from "next/server";
  * - owner: Repository owner (username or organization)
  * - repo: Repository name
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { sha: string } }
-) {
+export async function GET(req: NextRequest, context: RouteParams) {
   // Get the user's session
   const session = await auth();
 
@@ -34,10 +38,10 @@ export async function GET(
   }
 
   // Get the commit SHA from the path parameter
-  const commitSha = params.sha;
+  const commitSha = context.params.sha;
 
   // Get query parameters
-  const searchParams = request.nextUrl.searchParams;
+  const searchParams = req.nextUrl.searchParams;
   const owner = searchParams.get("owner");
   const repo = searchParams.get("repo");
 
@@ -64,8 +68,6 @@ export async function GET(
     return NextResponse.json({
       commit: commitDetail,
       formatted_data: formattedData,
-      // Note: In a real application, you would likely send this formatted data
-      // to an AI service here and return the AI's analysis
     });
   } catch (error) {
     console.error(`Error analyzing commit ${commitSha}:`, error);

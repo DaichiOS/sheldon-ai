@@ -2,6 +2,13 @@ import { auth } from "@/auth";
 import { getCommitDetailWithDiffs } from "@/services/github/commit/commitService";
 import { NextRequest, NextResponse } from "next/server";
 
+// Define a proper type for the context parameter
+type RouteParams = {
+  params: {
+    sha: string;
+  };
+};
+
 /**
  * GET /api/github/commits/[sha]
  *
@@ -15,10 +22,7 @@ import { NextRequest, NextResponse } from "next/server";
  * - owner: Repository owner (username or organization)
  * - repo: Repository name
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { sha: string } }
-) {
+export async function GET(req: NextRequest, context: RouteParams) {
   // Get the user's session
   const session = await auth();
 
@@ -31,10 +35,10 @@ export async function GET(
   }
 
   // Get the commit SHA from the path parameter
-  const commitSha = params.sha;
+  const commitSha = context.params.sha;
 
   // Get query parameters
-  const searchParams = request.nextUrl.searchParams;
+  const searchParams = req.nextUrl.searchParams;
   const owner = searchParams.get("owner");
   const repo = searchParams.get("repo");
 
